@@ -1,0 +1,28 @@
+
+digraph G {
+    node
+    [
+        fontname    = "Inconsolata"
+        fontsize    = 20
+        shape       = record
+        style       = rounded
+        margin      = "0.2,0.2"
+    ]
+
+    edge
+    [
+        fontname    = "Inconsolata"
+        fontsize    = 18
+        arrowhead   = vee
+        arrowtail   = vee
+        arrowsize   = 2
+    ]
+
+    "WebService module" -> "HTTP::AnyUA->request"
+    "HTTP::AnyUA->request" -> "Real user agent,\ne.g. HTTP::Tiny" [label="   Transform request and response  "]
+    "Real user agent,\ne.g. HTTP::Tiny" -> "internet"
+    "internet" -> "Real user agent,\ne.g. HTTP::Tiny"
+    "Real user agent,\ne.g. HTTP::Tiny" -> "HTTP::AnyUA->request"
+    "HTTP::AnyUA->request" -> "WebService module"
+}
+
