@@ -12,21 +12,6 @@ Hi, I'm Chaz.
 
 I want to talk to you about HTTP user agents.
 
-Some time ago I had an idea and I wrote a module and put it up on CPAN.
-
-I don't think anyone knows it exists because I didn't promote it at all. I didn't even really talk to anyone about it.
-I'm not a very social person.
-
-Anyway, I think it *might* actually be a good idea so I'm going to share it now.
-
----
-class: center, middle
-
-## The problem.
-
-???
-So here's the problem that I wanted to solve.
-
 ---
 class: img-map, center, middle
 
@@ -55,21 +40,29 @@ class: img-map, center, middle
 ???
 the Ontario Power Generation website.
 
+Random, but why not?
+
 ---
 class: img-map, center, middle
 
 ![WebService modules on CPAN](img/webservice-on-cpan-circled.png)
 
 ???
-Most of these modules congregate here.
+Most of these modules congregate here (or at least they should).
 
 ---
 class: center, middle
 
 ## `WebService`
 
+???
+In the `WebService` namespace.
+
 --
 ## `Net`
+
+???
+There are other common namespaces for this sort of thing...
 
 --
 ## `WWW`
@@ -99,9 +92,10 @@ modules often take care of some of the tricky or boring details, like:
 Details that are important but you don't want to read through the API documentation to figure it out.
 
 ---
+name: but
 class: center, middle
 
-## But
+But
 
 ???
 And here's the problem...
@@ -109,7 +103,7 @@ And here's the problem...
 ---
 class: center, middle
 
-## These modules are **tightly-coupled** to specific user agents.
+## These modules are .major-em[**tightly-coupled**] to specific .major-em[user agents].
 
 ### ;-(
 
@@ -128,7 +122,7 @@ Most of them use `LWP` or `HTTP::Tiny`.
 ---
 class: center, middle
 
-## This has problems.
+## This... could be better.
 
 ???
 Now I'm going to try to convince you that this is a problem.
@@ -136,16 +130,17 @@ Now I'm going to try to convince you that this is a problem.
 ---
 class: center, middle
 
-## Problem #1
+## Problem:
 
 ### How to configure the user agent...
 
 ???
 User agents typically have defaults and so may not need to be configured, but what if the user needs the user agent to
-support proxying, caching, TLS, or shorter timeouts?
-
-If the webservice package is *composing* (or wrapping) a user agent, then the webservice package needs to expose all of
-the ways that the user agent can be configured.
+support
+- proxying,
+- caching,
+- TLS verification,
+- timeouts...
 
 ---
 class: ex-code
@@ -164,9 +159,11 @@ my $resp = $ws->account_info;
 
 ???
 So, one way this has been solved is for the webservice to expose all the attributes and knobs needed to configure the
-internal agent.
+internal agent and just pass them through.
 
-But that's terrible.
+But this kinda bad because now every webservice module has to do this,
+
+...and every module will probably do it slightly differently.
 
 ---
 class: ex-code
@@ -187,8 +184,11 @@ my $resp = $ws->account_info;
 ```
 
 ???
-So someone remembered that dependency injection was a thing, so now we have modules that let you pass in your own user
+Then someone remembered that dependency injection was a thing, so now we have modules that let you pass in your own user
 agent.
+
+This is great because it lets the user set up the user agent however they want, and webservice modules writers don't
+need to do any of that boring work.
 
 Big improvement!
 
@@ -211,8 +211,10 @@ my $resp = $ws->account_info;       # ;-(
 ```
 
 ???
-But I can't just plug in any user agent I want! If the webservice module was written for `HTTP::Tiny` or any other user
-agent, it's expecting that I'm going to pass it the kind of user agent it wants.
+But I can't just plug in any user agent I want!
+
+If the webservice module was written for `HTTP::Tiny` or any other user agent, it's expecting that I'm going to pass it
+the kind of user agent it wants.
 
 This makes me sad.
 
@@ -224,7 +226,7 @@ class: center, middle
 ???
 I think the user writing a program should decide which user agent to use.
 
-After all, they're the ones who know what the requirements of their app are.
+After all, they're the ones who know the requirements of their program.
 
 If I'm writing a program that needs to use the least amount of resources, and I want to use a webservice that is coupled
 with a *not* tiny user agent, then I'm out of luck.
@@ -232,31 +234,41 @@ with a *not* tiny user agent, then I'm out of luck.
 Or if somebody wrote a great webservice module using a blocking interface like `HTTP::Tiny` or `LWP` that I want to use
 but my program is event-driven and so can't block, then I'm out of luck again.
 
-So then what, are we just going to write separate webservice modules for each user agent?
-
 ---
-
 ## [`Mail::SendGrid`](https://metacpan.org/pod/Mail::SendGrid) -> [`HTTP::Tiny`](https://metacpan.org/pod/HTTP::Tiny)
 ## [`Mojo::Sendgrid`](https://metacpan.org/pod/Mojo::Sendgrid) -> [`Mojo::UserAgent`](https://metacpan.org/pod/Mojo::UserAgent)
 ## [`WebService::SendGrid`](https://metacpan.org/pod/WebService::SendGrid) -> [`Net::Curl::Simple`](https://metacpan.org/pod/Net::Curl::Simple)
+## ...
 
 ???
-Yeah, that's exactly what's up.
+The solution we've come up with so far is to just implement a new webservice module for each type of user agent that
+anyone cares to use.
 
-What we need is user agent adapter (as in the adapter pattern).
-
-Something that has an inteface that module writers can code against and then translates the request and response
-appropriately for whatever real user agent is provided.
+Wasted effort. :-(
 
 ---
+class: center, middle
 
+## There's a better way.
+
+???
+What we need is user agent **adapter**.
+
+As in, the **adapter pattern**, which is the same pattern we generally use for the myriad "Any" modules.
+
+We need something that has an common inteface that module writers can code against, and then adapters to transform the
+request and response appropriately for whatever real user agent is wanted.
+
+So yeah, this isn't an original idea of mine.
+
+---
 ## [`HTTP::Any`](https://metacpan.org/pod/HTTP::Any)
 
 ???
 I searched CPAN and found just such a thing!
 
 --
-#### But it has fatal flaws...
+#### But it has some .major-em[fatal flaws]...
 
 ???
 in my opinion. (No offense to this module's author.)
@@ -265,8 +277,9 @@ in my opinion. (No offense to this module's author.)
 ### 1. It provides its own *new* interface.
 
 ???
-- And nobody wants to learn yet another user agent interface.
-- And it's a callback interface in order to support non-blocking user agents,
+- Okay, this one's not fatal.
+- Nobody wants to learn yet another user agent interface.
+- And it's a callback interface in order to support non-blocking user agents.
 
 But having to set callback functions if you're not actually using a non-blocking user agent is kinda clunky.
 
@@ -274,7 +287,9 @@ But having to set callback functions if you're not actually using a non-blocking
 ### 2. It doesn't support many user agents.
 
 ???
-only `LWP`, `AnyEvent`, and `Curl`.
+- `LWP`
+- `Curl`
+- `AnyEvent`
 
 --
 ### 3. It doesn't actually provide a common interface.
@@ -282,10 +297,15 @@ only `LWP`, `AnyEvent`, and `Curl`.
 ???
 so it's not really usable as an adapter.
 
+There were a couple other potential solutions on CPAN I found, but none of them overcome all of these problems.
+
+Some of the modules that look like they might work at face value, actually are aiming to solve the opposite problem;
+that is, when the user doesn't care what user agent is used, just find one and use it.
+
 ---
 class: center, middle
 
-## I wrote a module to fix these problems.
+## I wrote a module.
 
 ---
 class: center, middle
@@ -293,9 +313,9 @@ class: center, middle
 ## [`HTTP::AnyUA`](https://metacpan.org/pod/HTTP::AnyUA)
 
 ???
-This one is different because it has a "UA" at the end.
+This one is different because it has a "UA" at the end (for "user agent").
 
-It's also a true HTTP user agent adapter providing a common interface.
+It also solves the problems I had with the other module.
 
 ---
 ## [`HTTP::AnyUA`](https://metacpan.org/pod/HTTP::AnyUA)
@@ -304,7 +324,9 @@ It's also a true HTTP user agent adapter providing a common interface.
 
 ???
 - So not much new to learn.
-- And you don't have to use callbacks if your user agent is non-blocking.
+- And it doesn't make you use a callback interface if your user agent is non-blocking.
+
+If your webservice module already uses `HTTP::Tiny`, this is *almost* a drop-in replacement.
 
 --
 ### 2. Supports at least six user agents.
@@ -323,17 +345,19 @@ It's also a true HTTP user agent adapter providing a common interface.
 ???
 Plus any user agent that inherits from any of these in a well-behaved manner should also work.
 
+It's pretty easy to support for other user agents.
+
 --
 ### 3. Provides a *common* interface.
 
 ???
-which, like I said, is the `HTTP::Tiny` interface.
+The interface, like I said, is the `HTTP::Tiny` interface.
 
 ---
 class: ex-code
 
 ```perl
-has ua => (
+has ua => (                 # <-- user agent
     is       => 'ro',
     required => 1,
 );
@@ -466,22 +490,31 @@ class: center, middle
 ???
 I think this is pretty cool already, but I'll show you one more thing before I get kicked off that's even cooler...
 
+When you have a request response pipeline that is shaped like this, it begs to have...
+
 ---
 class: center, middle
 
 ![HTTP::AnyUA with middleware diagram](img/http-anyua-middleware-diagram.svg)
 
 ???
-You can write components that work for any user agent and plug them in. I've written only a couple such components, one
-to time the request takes and another to ensure a proper 'content-length' header is set.
+Just like in PSGI where you can have middleware components between whatever server handler and the app, you can do the
+same sort of thing for the client.
+
+You can write components that work for any user agent and plug them in.
+
+I've written only a couple components,
+- one to time or profile each request and
+- another to ensure a proper 'content-length' header is set.
 
 Middleware components can do anything, even short-circuit and not actually call the user agent.
 
-I started writing a caching component. This middleware is taking me awhile to write because I want it to be
-`RFC-7234`-compliant (and my interest jumps around), but it would be cool because not every user agent has a decent
+I started writing a caching component, but it's taking me awhile to write because I do want it to be
+`RFC-7234`-compliant (and my interest jumps around), but it will be cool because not every user agent has a decent
 cache.
 
-With HTTP::AnyUA, I just need to implement the cache once and it works for all of them.
+With HTTP::AnyUA, I just need to implement the cache once and it works for all user agents that can be plugged into this
+pipeline.
 
 ---
 class: center, middle
@@ -489,8 +522,10 @@ class: center, middle
 ## Conclusion
 
 ???
-If you're writing a module that needs to *use* an HTTP user agent but otherwise has no reason to prefer one over
-another, consider using `HTTP::AnyUA` or something like it.
+If you're writing a module that needs to *use* an HTTP user agent but otherwise has no reason to care what the user
+agent actually is, consider using `HTTP::AnyUA` or something like it (instead of coupling directly with a user agent).
+
+It will make your webservice module usable by more people.
 
 ---
 class: center, middle
