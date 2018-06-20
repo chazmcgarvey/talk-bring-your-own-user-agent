@@ -1,0 +1,107 @@
+@import url(https://fonts.googleapis.com/css?family=Open+Sans);
+@import url(https://fonts.googleapis.com/css?family=Muli);
+@import url(https://fonts.googleapis.com/css?family=Inconsolata);
+
+.remark-slide-content {
+    font-family: 'Open Sans';
+    font-size: 22px;
+}
+
+.remark-slide-content h1,
+.remark-slide-content h2,
+.remark-slide-content h3 {
+    font-family: Muli;
+    font-weight: bold;
+}
+.remark-slide-content h2 {
+    font-size: 40px;
+}
+.remark-slide-content h3 {
+    font-size: 30px;
+}
+
+.remark-slide-content li {
+    line-height: 2em;
+}
+.remark-slide-content .condensed li {
+    line-height: 1em;
+}
+
+.remark-code, .remark-inline-code {
+    font-family: Inconsolata, monospace;
+}
+.remark-code {
+    border-radius: 5px;
+    border: 1px solid #ccc;
+}
+
+.remark-slide-content blockquote {
+    border-radius: 5px;
+    border: 1px solid #ccc;
+    background: #f0f0f0;
+    margin: 1.5em 0;
+    padding: 1em;
+    quotes: "\201C""\201D""\2018""\2019";
+    position: relative;
+}
+.remark-slide-content blockquote:before {
+    color: #ccc;
+    position: absolute;
+    content: open-quote;
+    font-size: 6em;
+    line-height: 0.1em;
+    margin-right: 0.25em;
+    vertical-align: -0.4em;
+}
+
+.remark-slide-content .col {
+    box-sizing: border-box;
+    display: block;
+    float: left;
+    border: 0;
+    margin: 0;
+    padding: 0;
+    width: 50%;
+}
+.remark-slide-content .col:nth-of-type(odd) {
+    padding: 0 1em 0 0;
+}
+.remark-slide-content .col:nth-of-type(even) {
+    padding: 0 0 0 1em;
+}
+.remark-slide-content .col.sep:nth-of-type(odd) {
+    border-right: 1px solid #ccc;
+}
+.remark-slide-content .col.sep:nth-of-type(even) {
+    border-left: 1px solid #ccc;
+}
+
+/* fix non-collapsing margin */
+.remark-slide-content .marginfix h3,
+.remark-slide-content .marginfix ul {
+    margin-top: 0;
+}
+
+.remark-slide-content .top-right {
+    float: right;
+    margin: 50px 0 0 2em;
+}
+
+.remark-slide-content .highlight {
+    color: #7d9726;
+}
+
+.big {
+    font-size: 150%;
+}
+.small {
+    font-size: 50%;
+}
+
+.remark-code-line-highlighted {
+    background-color: rgba(200,200,255,.25);
+}
+.hljs-hybrid .hljs {
+    background: rgba(29,31,33,.96);
+}
+
